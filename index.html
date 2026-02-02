@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <style>
   :root {
-    --bg: #121212; /* Deep dark mode */
+    /* Exact Notion Dark Mode Background */
+    --bg: #191919; 
     --text: #ffffff;
-    --empty: #2a2a2a;
-    --bass-blue: #00a3ff; /* Electric Bass Blue */
-    --glow: rgba(0, 163, 255, 0.4);
+    --empty: #252525; 
+    --bass-blue: #00a3ff;
+    --glow: rgba(0, 163, 255, 0.3);
   }
   
   body { 
@@ -20,20 +21,20 @@
 
   .header { text-align: center; margin-bottom: 15px; }
   .title { font-size: 18px; font-weight: 700; margin: 0; color: var(--bass-blue); text-transform: uppercase; letter-spacing: 1px; }
-  .streak { font-size: 10px; font-weight: 700; color: #777; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px; }
+  .streak { font-size: 10px; font-weight: 700; color: #666; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px; }
 
   .heatmap-scroll { width: 100%; overflow-x: auto; display: flex; flex-direction: column; align-items: center; }
   
   .months { 
     display: flex; width: 100%; justify-content: space-between; 
-    font-size: 9px; font-weight: 700; color: #555;
+    font-size: 9px; font-weight: 700; color: #444;
     margin-bottom: 5px; padding-left: 18px; box-sizing: border-box;
   }
 
   .grid-container { display: flex; gap: 5px; }
   .days-labels { 
     display: flex; flex-direction: column; justify-content: space-between; 
-    padding: 2px 0; font-size: 8px; font-weight: 700; color: #444; height: 88px;
+    padding: 2px 0; font-size: 8px; font-weight: 700; color: #333; height: 88px;
   }
 
   .grid { 
@@ -47,7 +48,6 @@
   .square { 
     width: 10px; height: 10px; border-radius: 2px; 
     background: var(--empty); pointer-events: none;
-    transition: background 0.3s ease;
   }
 
   .square.active { background: var(--bass-blue); box-shadow: 0 0 8px var(--glow); }
@@ -56,15 +56,14 @@
   .controls { margin-top: 20px; display: flex; gap: 12px; }
   
   .btn {
-    border: none; padding: 12px 24px; border-radius: 8px;
+    border: none; padding: 10px 20px; border-radius: 8px;
     font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 11px;
     text-transform: uppercase;
   }
 
-  .btn-yes { background: var(--bass-blue); color: white; box-shadow: 0 4px 12px rgba(0, 163, 255, 0.2); }
-  .btn-undo { background: #333; color: #bbb; border: 1px solid #444; }
-  .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-  .btn:active { transform: translateY(0); }
+  .btn-yes { background: var(--bass-blue); color: white; }
+  .btn-undo { background: #2a2a2a; color: #888; border: 1px solid #333; }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
 </style>
 </head>
 <body>
@@ -93,15 +92,13 @@
 </div>
 
 <script>
-  // Unique storage key for Bass
-  const storageKey = 'bass_practice_2026';
+  const storageKey = 'bass_practice_2026_notion';
   const grid = document.getElementById('grid');
   let habitData = JSON.parse(localStorage.getItem(storageKey)) || Array(365).fill(0);
   let lastActionIndex = -1;
 
   function getTodayIndex() {
     const now = new Date();
-    // Ensuring it works for the year 2026 as requested
     const start = new Date(2026, 0, 1);
     const diff = now - start;
     return Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -109,8 +106,7 @@
 
   function render() {
     grid.innerHTML = '';
-    // Offset for Jan 1st, 2026 (starts on a Thursday)
-    const offset = 4; 
+    const offset = 4; // Jan 1 2026 is a Thursday
 
     for (let i = 0; i < offset; i++) {
       const empty = document.createElement('div');
@@ -124,7 +120,6 @@
       grid.appendChild(square);
     });
 
-    // Streak Logic
     let streak = 0;
     const today = getTodayIndex();
     for (let i = today; i >= 0; i--) {
