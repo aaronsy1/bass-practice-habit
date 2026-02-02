@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --bg: #121212; /* Deep dark mode */
+    --text: #ffffff;
+    --empty: #2a2a2a;
+    --bass-blue: #00a3ff; /* Electric Bass Blue */
+    --glow: rgba(0, 163, 255, 0.4);
+  }
+  
+  body { 
+    font-family: -apple-system, system-ui, sans-serif;
+    background: var(--bg); color: var(--text); 
+    display: flex; flex-direction: column; align-items: center; 
+    padding: 15px; margin: 0;
+  }
+
+  .header { text-align: center; margin-bottom: 15px; }
+  .title { font-size: 18px; font-weight: 700; margin: 0; color: var(--bass-blue); text-transform: uppercase; letter-spacing: 1px; }
+  .streak { font-size: 10px; font-weight: 700; color: #777; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px; }
+
+  .heatmap-scroll { width: 100%; overflow-x: auto; display: flex; flex-direction: column; align-items: center; }
+  
+  .months { 
+    display: flex; width: 100%; justify-content: space-between; 
+    font-size: 9px; font-weight: 700; color: #555;
+    margin-bottom: 5px; padding-left: 18px; box-sizing: border-box;
+  }
+
+  .grid-container { display: flex; gap: 5px; }
+  .days-labels { 
+    display: flex; flex-direction: column; justify-content: space-between; 
+    padding: 2px 0; font-size: 8px; font-weight: 700; color: #444; height: 88px;
+  }
+
+  .grid { 
+    display: grid; 
+    grid-template-rows: repeat(7, 10px);
+    grid-auto-flow: column; 
+    grid-auto-columns: 10px; 
+    gap: 3px; 
+  }
+
+  .square { 
+    width: 10px; height: 10px; border-radius: 2px; 
+    background: var(--empty); pointer-events: none;
+    transition: background 0.3s ease;
+  }
+
+  .square.active { background: var(--bass-blue); box-shadow: 0 0 8px var(--glow); }
+  .square.hidden { visibility: hidden; }
+
+  .controls { margin-top: 20px; display: flex; gap: 12px; }
+  
+  .btn {
+    border: none; padding: 12px 24px; border-radius: 8px;
+    font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .btn-yes { background: var(--bass-blue); color: white; box-shadow: 0 4px 12px rgba(0, 163, 255, 0.2); }
+  .btn-undo { background: #333; color: #bbb; border: 1px solid #444; }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  .btn:active { transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">🎸 Bass Practice</div>
+  <div id="streakText" class="streak">0 DAY STREAK</div>
+</div>
+
+<div class="heatmap-scroll">
+  <div style="min-width: 550px;">
+    <div class="months">
+      <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+      <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+    </div>
+    <div class="grid-container">
+      <div class="days-labels"><span>M</span><span>W</span><span>F</span><span>S</span></div>
+      <div id="grid" class="grid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-yes" onclick="logToday(1)">Layed Down a Groove</button>
+  <button class="btn btn-undo" onclick="undo()">Undo</button>
+</div>
+
+<script>
+  // Unique storage key for Bass
+  const storageKey = 'bass_practice_2026';
+  const grid = document.getElementById('grid');
+  let habitData = JSON.parse(localStorage.getItem(storageKey)) || Array(365).fill(0);
+  let lastActionIndex = -1;
+
+  function getTodayIndex() {
+    const now = new Date();
+    // Ensuring it works for the year 2026 as requested
+    const start = new Date(2026, 0, 1);
+    const diff = now - start;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  }
+
+  function render() {
+    grid.innerHTML = '';
+    // Offset for Jan 1st, 2026 (starts on a Thursday)
+    const offset = 4; 
+
+    for (let i = 0; i < offset; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'square hidden';
+      grid.appendChild(empty);
+    }
+
+    habitData.forEach((status) => {
+      const square = document.createElement('div');
+      square.className = 'square' + (status ? ' active' : '');
+      grid.appendChild(square);
+    });
+
+    // Streak Logic
+    let streak = 0;
+    const today = getTodayIndex();
+    for (let i = today; i >= 0; i--) {
+      if (habitData[i]) streak++;
+      else if (i !== today) break;
+    }
+    document.getElementById('streakText').innerText = streak + ' DAY STREAK';
+  }
+
+  function logToday(val) {
+    const today = getTodayIndex();
+    if (today >= 0 && today < 365) {
+      lastActionIndex = today;
+      habitData[today] = val;
+      save();
+    }
+  }
+
+  function undo() {
+    if (lastActionIndex !== -1) {
+      habitData[lastActionIndex] = 0;
+      save();
+    }
+  }
+
+  function save() {
+    localStorage.setItem(storageKey, JSON.stringify(habitData));
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
